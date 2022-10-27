@@ -3,45 +3,44 @@ const { Comment, Pizza } = require('../models');
 
 const commentController = {
     // add comment to pizza
-    addComment({ params, body}, res) {
+    addComment({ params, body }, res) {
       console.log(body);
       Comment.create(body)
         .then(({ _id }) => {
           return Pizza.findOneAndUpdate(
-            { _id: params.pizzaID },
-            { $push: { comments: _id} },
+            { _id: params.pizzaId },
+            { $push: { comments: _id } },
             { new: true }
-          )
+          );
         })
-        .then ( dbPizzaData => {
+        .then(dbPizzaData => {
           if (!dbPizzaData) {
-            res.status(404).json({ message: "No Pizza found with this id!"})
+            res.status(404).json({ message: 'No pizza found with this id!' });
+            return;
           }
-
-          res.status(200).json(dbPizzaData)
+          res.json(dbPizzaData);
         })
-        .catch( err => res.json(err))
+        .catch(err => res.json(err));
     },
   
     // remove comment
     removeComment({ params }, res) {
-      Comment.findOneAndDelete({ _id: params.commentID })
+      Comment.findOneAndDelete({ _id: params.commentId })
         .then(deletedComment => {
           if (!deletedComment) {
-            return res.status(404).json({message: "No comment with that id was found!"})
+            return res.status(404).json({ message: 'No comment with this id!' });
           }
-
           return Pizza.findOneAndUpdate(
-            { _id: params.pizzaID },
-            { $pull: { comments: params.commentId }},
+            { _id: params.pizzaId },
+            { $pull: { comments: params.commentId } },
             { new: true }
           );
         })
-        .then( dbPizzaData => {
-          if (!dbPizzaData){
-            res.status(404).json({message: "No pizza found with this id!"});
+        .then(dbPizzaData => {
+          if (!dbPizzaData) {
+            res.status(404).json({ message: 'No pizza found with this id!' });
+            return;
           }
-
           res.json(dbPizzaData);
         })
         .catch(err => res.json(err));
